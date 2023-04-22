@@ -1,4 +1,5 @@
 # Pylontech Battery Monitoring via WiFi
+Forked from irekzielinski/Pylontech-Battery-Monitoring
 
 This project allows you to control and monitor Pylontech US2000B, US2000C and US3000C batteries via console port over WiFi.
 It it's a great starting point to integrate battery with your home automation.
@@ -23,12 +24,12 @@ See the project in action on [Youtube](https://youtu.be/7VyQjKU3MsU):</br>
   * [Wemos D1 mini microcontroller](https://www.amazon.co.uk/Makerfire-NodeMcu-Development-ESP8266-Compatible/dp/B071S8MWTY/).
   * [SparkFun MAX3232 Transceiver](https://www.sparkfun.com/products/11189).
   * US2000B: Cable with RJ10 connector (some RJ10 cables have only two wires, make sure to buy one that has all four wires present).
-  * US2000C: Cable with RJ45 connector (see below for more details).
+  * US2000C or US5000: Cable with RJ45 connector (see below for more details).
   * Capacitors C1: 10uF, C2: 0.1uF (this is not strictly required, but recommended as Wemos D1 can have large current spikes).
 
 ![Schematics](Schemetics.png)
 
-# US2000C/US3000C notes:
+# US2000C/US3000C/US5000 notes:
 This battery uses RJ45 cable instead of RJ10. Schematics is the same only plug differs:
   * RJ45 Pin 3 (white-green) = R1IN
   * RJ45 Pin 6 (green)       = T1OUT
