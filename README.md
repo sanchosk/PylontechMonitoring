@@ -7,7 +7,7 @@ It it's a great starting point to integrate battery with your home automation.
 
 # Features:
   * Low cost (around 20$ in total).
-  * Adds WiFi capability to your Pylontech US2000B/C or US3000C battery.
+  * Adds WiFi capability to your Pylontech US2000B/C , US3000C, US5000 battery.
   * Device exposes web interface that allows to:
     * send console commands and read response over WiFi (no PC needed)
     * battery information can be retrevied also in JSON format for easy parsing
