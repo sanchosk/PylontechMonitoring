@@ -2,7 +2,6 @@
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include <ESP8266WebServer.h>
-#include <ESP8266WebServer.h>
 #include <SimpleTimer.h>
 #include <TimeLib.h> //https://github.com/PaulStoffregen/Time
 #include <ntp_time.h>
@@ -19,7 +18,7 @@
 #ifdef ENABLE_MQTT
 //NOTE 1: if you want to change what is pushed via MQTT - edit function: pushBatteryDataToMqtt.
 //NOTE 2: MQTT_TOPIC_ROOT is where battery will push MQTT topics. For example "soc" will be pushed to: "home/grid_battery/soc"
-#define MQTT_SERVER        "192.168.0.6"
+#define MQTT_SERVER        "192.168.1.2"
 #define MQTT_PORT          1883
 #define MQTT_USER          ""
 #define MQTT_PASSWORD      ""
@@ -64,7 +63,7 @@ void setup() {
     delay(1000);
   }
 
-  ArduinoOTA.setHostname("GarageBattery");
+  ArduinoOTA.setHostname("PylontechBattery");
   ArduinoOTA.begin();
   server.on("/", handleRoot);
   server.on("/log", handleLog);
