@@ -227,14 +227,7 @@ void handleReq()
     respOK = sendCommandAndReadSerialResponse(server.arg("code").c_str());
   }
 
-  if(respOK)
-  {
-    server.send(200, "text/plain", g_szRecvBuff);
-  }
-  else
-  {
-    server.send(500, "text/plain", "????");
-  }
+  handleRoot();
 }
 
 void handleJsonOut()
@@ -271,8 +264,10 @@ void handleRoot() {
 
 
   strncat(szTmp, "<BR><a href='/log'>Runtime log</a><HR>", sizeof(szTmp)-1);
-  strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'></form><a href='/req?code=pwr'>Power</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a>", sizeof(szTmp)-1);
-  strncat(szTmp, "</html>", sizeof(szTmp)-1);
+  strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'><a href='/req?code=pwr'>Power</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a><br>", sizeof(szTmp)-1);
+  strncat(szTmp, "<textarea rows='80' cols='180'>", sizeof(szTmp)-1);
+  strncat(szTmp, g_szRecvBuff, sizeof(szTmp)-1);
+  strncat(szTmp, "</textarea></form>", sizeof(szTmp)-1);  strncat(szTmp, "</html>", sizeof(szTmp)-1);
   
   server.send(200, "text/html", szTmp);
 }
