@@ -2,15 +2,14 @@
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include <ESP8266WebServer.h>
-#include <SimpleTimer.h>
-#include <TimeLib.h> //https://github.com/PaulStoffregen/Time
-#include <ntp_time.h>
 #include <circular_log.h>
+#include <ArduinoJson.h>
+#include <NTPClient.h>
 
 
 //IMPORTANT: Specify your WIFI settings:
-#define WIFI_SSID "--YOUR SSID HERE --"
-#define WIFI_PASS "-- YOUR PASSWORD HERE --"
+#define WIFI_SSID "---SID HERE!---"
+#define WIFI_PASS "---PASSWORD!---"
 
 //IMPORTANT: Uncomment this line if you want to enable MQTT (and fill correct MQTT_ values below):
 //#define ENABLE_MQTT
@@ -20,9 +19,9 @@
 //NOTE 2: MQTT_TOPIC_ROOT is where battery will push MQTT topics. For example "soc" will be pushed to: "home/grid_battery/soc"
 #define MQTT_SERVER        "192.168.1.2"
 #define MQTT_PORT          1883
-#define MQTT_USER          ""
-#define MQTT_PASSWORD      ""
-#define MQTT_TOPIC_ROOT    "home/grid_battery/"  //this is where mqtt data will be pushed
+#define MQTT_USER          "---username---"
+#define MQTT_PASSWORD      "---password---"
+#define MQTT_TOPIC_ROOT    "homeassistant/sensor/grid_battery/"  //this is where mqtt data will be pushed
 #define MQTT_PUSH_FREQ_SEC 2  //maximum mqtt update frequency in seconds
 
 #include <PubSubClient.h>
@@ -30,10 +29,18 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 #endif //ENABLE_MQTT
 
+//risposta in testo
 char g_szRecvBuff[7000];
 
+
+const long utcOffsetInSeconds = 3600;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+
+
 ESP8266WebServer server(80);
-SimpleTimer timer;
 circular_log<7000> g_log;
 bool ntpTimeReceived = false;
 int g_baudRate = 0;
@@ -43,7 +50,11 @@ void Log(const char* msg)
   g_log.Log(msg);
 }
 
+
 void setup() {
+  
+  memset(g_szRecvBuff, 0, sizeof(g_szRecvBuff)); //clean variable
+  
   pinMode(LED_BUILTIN, OUTPUT); 
   digitalWrite(LED_BUILTIN, HIGH);//high is off
   
@@ -75,7 +86,7 @@ void setup() {
   
   server.begin(); 
   
-  syncTime();
+  timeClient.begin();
 
 #ifdef ENABLE_MQTT
   mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
@@ -230,6 +241,8 @@ void handleReq()
   handleRoot();
 }
 
+
+
 void handleJsonOut()
 {
   if(sendCommandAndReadSerialResponse("pwr") == false)
@@ -246,29 +259,35 @@ void handleJsonOut()
 void handleRoot() {
   unsigned long days = 0, hours = 0, minutes = 0;
   unsigned long val = os_getCurrentTimeSec();
-  
   days = val / (3600*24);
   val -= days * (3600*24);
-  
   hours = val / 3600;
   val -= hours * 3600;
-  
   minutes = val / 60;
   val -= minutes*60;
-  
-  static char szTmp[2500] = "";  
-  snprintf(szTmp, sizeof(szTmp)-1, "<html><b>Garage Battery</b><br>Time GMT: %d/%02d/%02d %02d:%02d:%02d (%s)<br>Uptime: %02d:%02d:%02d.%02d<br><br>free heap: %u<br>Wifi RSSI: %d<BR>Wifi SSID: %s", 
-            year(), month(), day(), hour(), minute(), second(), "GMT",
+
+
+  timeClient.update();
+  time_t epochTime = timeClient.getEpochTime();
+  String formattedTime = timeClient.getFormattedTime();
+  //Get a time structure
+  struct tm *ptm = gmtime ((time_t *)&epochTime); 
+  int currentMonth = ptm->tm_mon+1;
+
+  static char szTmp[9500] = "";  
+
+  snprintf(szTmp, sizeof(szTmp)-1, "<html><b>Pylontech Battery</b><br>Time GMT: %s (%s)<br>Uptime: %02d:%02d:%02d.%02d<br><br>free heap: %u<br>Wifi RSSI: %d<BR>Wifi SSID: %s", 
+            formattedTime, "GMT",
             (int)days, (int)hours, (int)minutes, (int)val, 
             ESP.getFreeHeap(), WiFi.RSSI(), WiFi.SSID().c_str());
-
 
   strncat(szTmp, "<BR><a href='/log'>Runtime log</a><HR>", sizeof(szTmp)-1);
   strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'><a href='/req?code=pwr'>Power</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a><br>", sizeof(szTmp)-1);
   strncat(szTmp, "<textarea rows='80' cols='180'>", sizeof(szTmp)-1);
   strncat(szTmp, g_szRecvBuff, sizeof(szTmp)-1);
-  strncat(szTmp, "</textarea></form>", sizeof(szTmp)-1);  strncat(szTmp, "</html>", sizeof(szTmp)-1);
-  
+  strncat(szTmp, "</textarea></form>", sizeof(szTmp)-1);
+  strncat(szTmp, "</html>", sizeof(szTmp)-1);
+
   server.send(200, "text/html", szTmp);
 }
 
@@ -288,21 +307,6 @@ unsigned long os_getCurrentTimeSec()
   
   //millis will wrap each 50 days, as we are interested only in seconds, let's keep the wrap counter
   return (wrapCnt*4294967) + seconds;
-}
-
-void syncTime()
-{
-  //get time from NTP
-  time_t currentTimeGMT = getNtpTime();
-  if(currentTimeGMT)
-  {
-    ntpTimeReceived = true;
-    setTime(currentTimeGMT);
-  }  
-  else
-  {
-    timer.setTimeout(5000, syncTime); //try again in 5 seconds
-  }
 }
 
 void wakeUpConsole()
@@ -645,7 +649,6 @@ void loop() {
   
   ArduinoOTA.handle();
   server.handleClient();
-  timer.run();
 
   //if there are bytes availbe on serial here - it's unexpected
   //when we send a command to battery, we read whole response
@@ -718,7 +721,7 @@ void mqttLoop()
   //first: let's make sure we are connected to mqtt
   const char* topicLastWill = MQTT_TOPIC_ROOT "availability";
   if (!mqttClient.connected() && (g_lastConnectionAttempt == 0 || os_getCurrentTimeSec() - g_lastConnectionAttempt > 60)) {
-    if(mqttClient.connect("GarageBattery", MQTT_USER, MQTT_PASSWORD, topicLastWill, 1, true, "offline"))
+    if(mqttClient.connect("PylontechBattery", MQTT_USER, MQTT_PASSWORD, topicLastWill, 1, true, "offline"))
     {
       Log("Connected to MQTT server: " MQTT_SERVER);
       mqttClient.publish(topicLastWill, "online", true);
