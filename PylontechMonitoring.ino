@@ -6,15 +6,23 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 
+//+++ START CONFIGURATION +++
 
 //IMPORTANT: Specify your WIFI settings:
 #define WIFI_SSID "---SID HERE!---"
 #define WIFI_PASS "---PASSWORD!---"
+#define WIFI_HOSTNAME "PylontechBattery"
 
 //IMPORTANT: Uncomment this line if you want to enable MQTT (and fill correct MQTT_ values below):
-//#define ENABLE_MQTT
+#define ENABLE_MQTT
 
-#ifdef ENABLE_MQTT
+// Set offset time in seconds to adjust for your timezone, for example:
+// GMT +1 = 3600
+// GMT +8 = 28800
+// GMT -1 = -3600
+// GMT 0 = 0
+#define GMT 3600
+
 //NOTE 1: if you want to change what is pushed via MQTT - edit function: pushBatteryDataToMqtt.
 //NOTE 2: MQTT_TOPIC_ROOT is where battery will push MQTT topics. For example "soc" will be pushed to: "home/grid_battery/soc"
 #define MQTT_SERVER        "192.168.1.2"
@@ -24,16 +32,18 @@
 #define MQTT_TOPIC_ROOT    "homeassistant/sensor/grid_battery/"  //this is where mqtt data will be pushed
 #define MQTT_PUSH_FREQ_SEC 2  //maximum mqtt update frequency in seconds
 
+//+++   END CONFIGURATION +++
+
+#ifdef ENABLE_MQTT
 #include <PubSubClient.h>
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 #endif //ENABLE_MQTT
 
-//risposta in testo
+//text response
 char g_szRecvBuff[7000];
 
-
-const long utcOffsetInSeconds = 3600;
+const long utcOffsetInSeconds = GMT;
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
@@ -61,7 +71,7 @@ void setup() {
   // put your setup code here, to run once:
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false); //our credentialss are hardcoded, so we don't need ESP saving those each boot (will save on flash wear)
-  WiFi.hostname("PylontechBattery");
+  WiFi.hostname(WIFI_HOSTNAME);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   for(int ix=0; ix<10; ix++)
@@ -74,7 +84,7 @@ void setup() {
     delay(1000);
   }
 
-  ArduinoOTA.setHostname("PylontechBattery");
+  ArduinoOTA.setHostname(WIFI_HOSTNAME);
   ArduinoOTA.begin();
   server.on("/", handleRoot);
   server.on("/log", handleLog);
@@ -88,6 +98,7 @@ void setup() {
   
   timeClient.begin();
 
+  
 #ifdef ENABLE_MQTT
   mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
 #endif
@@ -257,6 +268,8 @@ void handleJsonOut()
 }
 
 void handleRoot() {
+
+  timeClient.update(); //get ntp datetime
   unsigned long days = 0, hours = 0, minutes = 0;
   unsigned long val = os_getCurrentTimeSec();
   days = val / (3600*24);
@@ -266,8 +279,6 @@ void handleRoot() {
   minutes = val / 60;
   val -= minutes*60;
 
-
-  timeClient.update();
   time_t epochTime = timeClient.getEpochTime();
   String formattedTime = timeClient.getFormattedTime();
   //Get a time structure
@@ -287,7 +298,7 @@ void handleRoot() {
   strncat(szTmp, g_szRecvBuff, sizeof(szTmp)-1);
   strncat(szTmp, "</textarea></form>", sizeof(szTmp)-1);
   strncat(szTmp, "</html>", sizeof(szTmp)-1);
-
+  //send page
   server.send(200, "text/html", szTmp);
 }
 
@@ -707,11 +718,13 @@ void pushBatteryDataToMqtt(const batteryStack& lastSentData, bool forceUpdate /*
 {
   mqtt_publish_f(MQTT_TOPIC_ROOT "soc",          g_stack.soc,                lastSentData.soc,                0, forceUpdate);
   mqtt_publish_f(MQTT_TOPIC_ROOT "temp",         (float)g_stack.temp/1000.0, (float)lastSentData.temp/1000.0, 0, forceUpdate);
+  mqtt_publish_i(MQTT_TOPIC_ROOT "currentDC",    g_stack.currentDC,          lastSentData.currentDC,          1, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "estPowerAC",   g_stack.getEstPowerAc(),    lastSentData.getEstPowerAc(),   10, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "battery_count",g_stack.batteryCount,       lastSentData.batteryCount,       0, forceUpdate);
   mqtt_publish_s(MQTT_TOPIC_ROOT "base_state",   g_stack.baseState,          lastSentData.baseState            , forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "is_normal",    g_stack.isNormal() ? 1:0,   lastSentData.isNormal() ? 1:0,   0, forceUpdate);
-}
+  mqtt_publish_i(MQTT_TOPIC_ROOT "getPowerDC",   g_stack.getPowerDC(),       lastSentData.getPowerDC(),       1, forceUpdate);
+} 
 
 void mqttLoop()
 {
@@ -721,7 +734,7 @@ void mqttLoop()
   //first: let's make sure we are connected to mqtt
   const char* topicLastWill = MQTT_TOPIC_ROOT "availability";
   if (!mqttClient.connected() && (g_lastConnectionAttempt == 0 || os_getCurrentTimeSec() - g_lastConnectionAttempt > 60)) {
-    if(mqttClient.connect("PylontechBattery", MQTT_USER, MQTT_PASSWORD, topicLastWill, 1, true, "offline"))
+    if(mqttClient.connect(WIFI_HOSTNAME, MQTT_USER, MQTT_PASSWORD, topicLastWill, 1, true, "offline"))
     {
       Log("Connected to MQTT server: " MQTT_SERVER);
       mqttClient.publish(topicLastWill, "online", true);
