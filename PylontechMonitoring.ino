@@ -403,6 +403,7 @@ struct batteryStack
   long avgVoltage;    //in mV
   char baseState[9];  //Charge | Dischg | Idle | Balance | Alarm!
 
+  
   pylonBattery batts[MAX_PYLON_BATTERIES];
 
   bool isNormal() const
@@ -419,13 +420,33 @@ struct batteryStack
     return true;
   }
 
-  //in wH
+  //in Wh
   long getPowerDC() const
   {
     return (long)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0));
   }
 
-  //wH estimated current on AC side (taking into account Sofar ME3000SP losses)
+  // power in Wh in charge
+  long powerIN() const
+  {
+    if (currentDC > 0) {
+       return (long)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0));
+    } else {
+       return (long)(0);
+    }
+  }
+  
+  // power in Wh in discharge
+  long powerOUT() const
+  {
+    if (currentDC < 0) {
+       return (long)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0)*-1);
+    } else {
+       return (long)(0);
+    }
+  }
+
+  //Wh estimated current on AC side (taking into account Sofar ME3000SP losses)
   long getEstPowerAc() const
   {
     double powerDC = (double)getPowerDC();
@@ -724,6 +745,8 @@ void pushBatteryDataToMqtt(const batteryStack& lastSentData, bool forceUpdate /*
   mqtt_publish_s(MQTT_TOPIC_ROOT "base_state",   g_stack.baseState,          lastSentData.baseState            , forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "is_normal",    g_stack.isNormal() ? 1:0,   lastSentData.isNormal() ? 1:0,   0, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "getPowerDC",   g_stack.getPowerDC(),       lastSentData.getPowerDC(),       1, forceUpdate);
+  mqtt_publish_i(MQTT_TOPIC_ROOT "powerIN",      g_stack.powerIN(),          lastSentData.powerIN(),          1, forceUpdate);
+  mqtt_publish_i(MQTT_TOPIC_ROOT "powerOUT",     g_stack.powerOUT(),         lastSentData.powerOUT(),         1, forceUpdate);
 } 
 
 void mqttLoop()
