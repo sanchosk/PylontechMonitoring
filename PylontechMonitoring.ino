@@ -18,10 +18,11 @@
 
 // Set offset time in seconds to adjust for your timezone, for example:
 // GMT +1 = 3600
+// GMT +1 = 7200
 // GMT +8 = 28800
 // GMT -1 = -3600
 // GMT 0 = 0
-#define GMT 3600
+#define GMT 7200
 
 //NOTE 1: if you want to change what is pushed via MQTT - edit function: pushBatteryDataToMqtt.
 //NOTE 2: MQTT_TOPIC_ROOT is where battery will push MQTT topics. For example "soc" will be pushed to: "home/grid_battery/soc"
@@ -286,9 +287,9 @@ void handleRoot() {
   int currentMonth = ptm->tm_mon+1;
 
   static char szTmp[9500] = "";  
-
-  snprintf(szTmp, sizeof(szTmp)-1, "<html><b>Pylontech Battery</b><br>Time GMT: %s (%s)<br>Uptime: %02d:%02d:%02d.%02d<br><br>free heap: %u<br>Wifi RSSI: %d<BR>Wifi SSID: %s", 
-            formattedTime, "GMT",
+  long timezone= GMT / 3600;
+  snprintf(szTmp, sizeof(szTmp)-1, "<html><b>Pylontech Battery</b><br>Time GMT: %s (%s %d)<br>Uptime: %02d:%02d:%02d.%02d<br><br>free heap: %u<br>Wifi RSSI: %d<BR>Wifi SSID: %s", 
+            formattedTime, "GMT ", timezone,
             (int)days, (int)hours, (int)minutes, (int)val, 
             ESP.getFreeHeap(), WiFi.RSSI(), WiFi.SSID().c_str());
 
