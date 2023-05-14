@@ -428,22 +428,22 @@ struct batteryStack
   }
 
   // power in Wh in charge
-  long powerIN() const
+  float powerIN() const
   {
     if (currentDC > 0) {
-       return (long)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0));
+       return (float)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0));
     } else {
-       return (long)(0);
+       return (float)(0);
     }
   }
   
   // power in Wh in discharge
-  long powerOUT() const
+  float powerOUT() const
   {
     if (currentDC < 0) {
-       return (long)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0)*-1);
+       return (float)(((double)currentDC/1000.0)*((double)avgVoltage/1000.0)*-1);
     } else {
-       return (long)(0);
+       return (float)(0);
     }
   }
 
