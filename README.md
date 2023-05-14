@@ -51,3 +51,50 @@ This battery uses RJ45 cable instead of RJ10. Schematics is the same only plug d
   * Connect Wemos D1 to the power via USB
   * Find what IP address was assigned to your Wemos by your router and open it in the web-browser
   * You should be able now to connunicate with the battery via WiFi
+
+
+
+# Example of sensors in Home Assistant:
+
+```
+mqtt:
+
+  sensor:
+    - name: "Livello Carica Batteria"
+      state_topic: "homeassistant/sensor/grid_battery/soc"
+      unit_of_measurement: "%"
+      device_class: battery
+      
+    - name: "Stato Batteria"
+      state_topic: "homeassistant/sensor/grid_battery/base_state"
+      
+    - name: "Temperatura Batteria"
+      state_topic: "homeassistant/sensor/grid_battery/temp"
+      unit_of_measurement: "°C"
+      device_class: temperature
+      
+    - name: "Num Batterie"
+      state_topic: "homeassistant/sensor/grid_battery/battery_count"
+      
+    - name: "Potenza impegnata Batterie"
+      state_topic: "homeassistant/sensor/grid_battery/getPowerDC"
+      unit_of_measurement: "Wh"
+      device_class: energy
+      
+    - name: "Potenza carica Batterie"
+      state_topic: "homeassistant/sensor/grid_battery/powerIN"
+      unit_of_measurement: "Wh"
+      state_class: "total_increasing"
+      device_class: "energy"
+      #last_reset: none
+      icon: mdi:flash
+
+      
+    - name: "Potenza scarica Batterie"
+      state_topic: "homeassistant/sensor/grid_battery/powerOUT"
+      unit_of_measurement: "Wh"
+      state_class: "total_increasing"
+      device_class: "energy"
+      #last_reset: none
+      icon: mdi:flash
+```
