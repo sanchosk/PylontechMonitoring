@@ -9,8 +9,8 @@
 //+++ START CONFIGURATION +++
 
 //IMPORTANT: Specify your WIFI settings:
-#define WIFI_SSID "---SID HERE!---"
-#define WIFI_PASS "---PASSWORD!---"
+#define WIFI_SSID "*** your ssid ***"
+#define WIFI_PASS "*** your wifi pass ***"
 #define WIFI_HOSTNAME "PylontechBattery"
 
 //IMPORTANT: Uncomment this line if you want to enable MQTT (and fill correct MQTT_ values below):
@@ -26,11 +26,11 @@
 
 //NOTE 1: if you want to change what is pushed via MQTT - edit function: pushBatteryDataToMqtt.
 //NOTE 2: MQTT_TOPIC_ROOT is where battery will push MQTT topics. For example "soc" will be pushed to: "home/grid_battery/soc"
-#define MQTT_SERVER        "192.168.1.2"
+#define MQTT_SERVER        "*** your MQTT server ***"
 #define MQTT_PORT          1883
-#define MQTT_USER          "---username---"
-#define MQTT_PASSWORD      "---password---"
-#define MQTT_TOPIC_ROOT    "homeassistant/sensor/grid_battery/"  //this is where mqtt data will be pushed
+#define MQTT_USER          "*** your MQTT username ***"
+#define MQTT_PASSWORD      "*** your MQTT password ***"
+#define MQTT_TOPIC_ROOT    "pylontech/sensor/grid_battery/"  //this is where mqtt data will be pushed
 #define MQTT_PUSH_FREQ_SEC 2  //maximum mqtt update frequency in seconds
 
 //+++   END CONFIGURATION +++
@@ -294,8 +294,8 @@ void handleRoot() {
             ESP.getFreeHeap(), WiFi.RSSI(), WiFi.SSID().c_str());
 
   strncat(szTmp, "<BR><a href='/log'>Runtime log</a><HR>", sizeof(szTmp)-1);
-  strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'><a href='/req?code=pwr'>Power</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a><br>", sizeof(szTmp)-1);
-  strncat(szTmp, "<textarea rows='80' cols='180'>", sizeof(szTmp)-1);
+  strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'> <a href='/req?code=pwr'>PWR</a> | <a href='/req?code=pwr%201'>Power 1</a> |  <a href='/req?code=pwr%202'>Power 2</a> | <a href='/req?code=pwr%203'>Power 3</a> | <a href='/req?code=pwr%204'>Power 4</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a><br>", sizeof(szTmp)-1);
+  strncat(szTmp, "<textarea rows='45' cols='180'>", sizeof(szTmp)-1);
   strncat(szTmp, g_szRecvBuff, sizeof(szTmp)-1);
   strncat(szTmp, "</textarea></form>", sizeof(szTmp)-1);
   strncat(szTmp, "</html>", sizeof(szTmp)-1);
@@ -748,6 +748,33 @@ void pushBatteryDataToMqtt(const batteryStack& lastSentData, bool forceUpdate /*
   mqtt_publish_i(MQTT_TOPIC_ROOT "getPowerDC",   g_stack.getPowerDC(),       lastSentData.getPowerDC(),       1, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "powerIN",      g_stack.powerIN(),          lastSentData.powerIN(),          1, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "powerOUT",     g_stack.powerOUT(),         lastSentData.powerOUT(),         1, forceUpdate);
+
+  // publishing details
+  for (int ix = 0; ix < g_stack.batteryCount; ix++) {
+    char ixBuff[50];
+    String ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/voltage";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_f(ixBuff, g_stack.batts[ix].voltage / 1000.0, lastSentData.batts[ix].voltage / 1000.0, 0, forceUpdate);
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/current";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_f(ixBuff, g_stack.batts[ix].current / 1000.0, lastSentData.batts[ix].current / 1000.0, 0, forceUpdate);
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/soc";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_i(ixBuff, g_stack.batts[ix].soc, lastSentData.batts[ix].soc, 0, forceUpdate);
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/charging";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_i(ixBuff, g_stack.batts[ix].isCharging()?1:0, lastSentData.batts[ix].isCharging()?1:0, 0, forceUpdate);
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/discharging";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_i(ixBuff, g_stack.batts[ix].isDischarging()?1:0, lastSentData.batts[ix].isDischarging()?1:0, 0, forceUpdate);
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/idle";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_i(ixBuff, g_stack.batts[ix].isIdle()?1:0, lastSentData.batts[ix].isIdle()?1:0, 0, forceUpdate);
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/state";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_s(ixBuff, g_stack.batts[ix].isIdle()?"Idle":g_stack.batts[ix].isCharging()?"Charging":g_stack.batts[ix].isDischarging()?"Discharging":"", lastSentData.batts[ix].isIdle()?"Idle":lastSentData.batts[ix].isCharging()?"Charging":lastSentData.batts[ix].isDischarging()?"Discharging":"", forceUpdate);
+
+  }
 } 
 
 void mqttLoop()
