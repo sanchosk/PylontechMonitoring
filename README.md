@@ -86,7 +86,6 @@ mqtt:
       unit_of_measurement: "Wh"
       state_class: "total_increasing"
       device_class: "energy"
-      #last_reset: none
       icon: mdi:flash
 
       
@@ -95,6 +94,5 @@ mqtt:
       unit_of_measurement: "Wh"
       state_class: "total_increasing"
       device_class: "energy"
-      #last_reset: none
       icon: mdi:flash
 ```
