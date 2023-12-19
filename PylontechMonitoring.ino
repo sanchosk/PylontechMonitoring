@@ -739,7 +739,7 @@ void mqtt_publish_s(const char* topic, const char* newValue, const char* oldValu
 void pushBatteryDataToMqtt(const batteryStack& lastSentData, bool forceUpdate /* if true - we will send all data regardless if it's the same */)
 {
   mqtt_publish_f(MQTT_TOPIC_ROOT "soc",          g_stack.soc,                lastSentData.soc,                0, forceUpdate);
-  mqtt_publish_f(MQTT_TOPIC_ROOT "temp",         (float)g_stack.temp/1000.0, (float)lastSentData.temp/1000.0, 0, forceUpdate);
+  mqtt_publish_f(MQTT_TOPIC_ROOT "temp",         (float)g_stack.temp/1000.0, (float)lastSentData.temp/1000.0, 0.1, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "currentDC",    g_stack.currentDC,          lastSentData.currentDC,          1, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "estPowerAC",   g_stack.getEstPowerAc(),    lastSentData.getEstPowerAc(),   10, forceUpdate);
   mqtt_publish_i(MQTT_TOPIC_ROOT "battery_count",g_stack.batteryCount,       lastSentData.batteryCount,       0, forceUpdate);
@@ -773,7 +773,9 @@ void pushBatteryDataToMqtt(const batteryStack& lastSentData, bool forceUpdate /*
     ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/state";
     ixBattStr.toCharArray(ixBuff, 50);
     mqtt_publish_s(ixBuff, g_stack.batts[ix].isIdle()?"Idle":g_stack.batts[ix].isCharging()?"Charging":g_stack.batts[ix].isDischarging()?"Discharging":"", lastSentData.batts[ix].isIdle()?"Idle":lastSentData.batts[ix].isCharging()?"Charging":lastSentData.batts[ix].isDischarging()?"Discharging":"", forceUpdate);
-
+    ixBattStr = MQTT_TOPIC_ROOT + String(ix) + "/temp";
+    ixBattStr.toCharArray(ixBuff, 50);
+    mqtt_publish_f(ixBuff, (float)g_stack.batts[ix].tempr/1000.0, (float)lastSentData.batts[ix].tempr/1000.0, 0.1, forceUpdate);
   }
 } 
 
