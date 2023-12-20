@@ -13,6 +13,18 @@
 #define WIFI_PASS "*** your wifi pass ***"
 #define WIFI_HOSTNAME "PylontechBattery"
 
+//Uncomment for static ip configuration
+//#define STATIC_IP
+
+// Set your Static IP address
+#define IP 192.168.1.1
+#define NETMASK 255.255.255.0
+// Set your Gateway IP address
+#define GATEWAY 192.168.1.10
+// Set your dns address
+#define DNS 8.8.8.8
+
+
 //IMPORTANT: Uncomment this line if you want to enable MQTT (and fill correct MQTT_ values below):
 #define ENABLE_MQTT
 
@@ -73,10 +85,14 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false); //our credentialss are hardcoded, so we don't need ESP saving those each boot (will save on flash wear)
   WiFi.hostname(WIFI_HOSTNAME);
+  #ifdef STATIC_IP
+     WiFi.config(IP, GATEWAY, NETMASK, DNS);
+  #endif
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   for(int ix=0; ix<10; ix++)
   {
+    Log("Wait for WIFI Connection");
     if(WiFi.status() == WL_CONNECTED)
     {
       break;
