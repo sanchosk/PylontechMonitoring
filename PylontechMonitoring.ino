@@ -15,7 +15,6 @@
 
 //Uncomment for static ip configuration
 //#define STATIC_IP
-
 // Set your Static IP address
 #define IP 192.168.1.1
 #define NETMASK 255.255.255.0
@@ -23,6 +22,13 @@
 #define GATEWAY 192.168.1.10
 // Set your dns address
 #define DNS 8.8.8.8
+
+
+//Uncomment for authentication page
+//#define AUTHENTICATION
+//set http Authentication
+const char* www_username = "admin";
+const char* www_password = "password";
 
 
 //IMPORTANT: Uncomment this line if you want to enable MQTT (and fill correct MQTT_ values below):
@@ -73,6 +79,18 @@ void Log(const char* msg)
   g_log.Log(msg);
 }
 
+//Define Interrupt Timer to Calculate Power meter every second (kWh)
+#define USING_TIM_DIV1 true                                             // for shortest and most accurate timer
+ESP8266Timer ITimer;
+bool setInterval(unsigned long interval, timer_callback callback);      // interval (in microseconds)
+#define TIMER_INTERVAL_MS 1000
+
+//Global Variables for the Power Meter - accessible from the calculating interrupt und from main
+unsigned long powerIN = 0;       //WS gone in to the BAttery
+unsigned long powerOUT = 0;      //WS gone out of the Battery
+//Global Variables for the Power Meter - Überlauf
+unsigned long powerINWh = 0;       //WS gone in to the BAttery
+unsigned long powerOUTWh = 0;      //WS gone out of the Battery
 
 void setup() {
   
@@ -108,6 +126,11 @@ void setup() {
   server.on("/req", handleReq);
   server.on("/jsonOut", handleJsonOut);
   server.on("/reboot", [](){
+    #ifdef AUTHENTICATION
+    if (!server.authenticate(www_username, www_password)) {
+      return server.requestAuthentication();
+    }
+    #endif
     ESP.restart();
   });
   
@@ -121,10 +144,16 @@ void setup() {
 #endif
 
   Log("Boot event");
+  
 }
 
 void handleLog()
 {
+  #ifdef AUTHENTICATION
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  } 
+  #endif
   server.send(200, "text/html", g_log.c_str());
 }
 
@@ -256,6 +285,11 @@ bool sendCommandAndReadSerialResponse(const char* pszCommand)
 
 void handleReq()
 {
+  #ifdef AUTHENTICATION
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  #endif
   bool respOK;
   if(server.hasArg("code") == false)
   {
@@ -273,6 +307,11 @@ void handleReq()
 
 void handleJsonOut()
 {
+  #ifdef AUTHENTICATION
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  #endif
   if(sendCommandAndReadSerialResponse("pwr") == false)
   {
     server.send(500, "text/plain", "Failed to get response to 'pwr' command");
@@ -285,7 +324,11 @@ void handleJsonOut()
 }
 
 void handleRoot() {
-
+  #ifdef AUTHENTICATION
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  #endif
   timeClient.update(); //get ntp datetime
   unsigned long days = 0, hours = 0, minutes = 0;
   unsigned long val = os_getCurrentTimeSec();
@@ -311,7 +354,9 @@ void handleRoot() {
 
   strncat(szTmp, "<BR><a href='/log'>Runtime log</a><HR>", sizeof(szTmp)-1);
   strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'> <a href='/req?code=pwr'>PWR</a> | <a href='/req?code=pwr%201'>Power 1</a> |  <a href='/req?code=pwr%202'>Power 2</a> | <a href='/req?code=pwr%203'>Power 3</a> | <a href='/req?code=pwr%204'>Power 4</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a><br>", sizeof(szTmp)-1);
-  strncat(szTmp, "<textarea rows='45' cols='180'>", sizeof(szTmp)-1);
+  //strncat(szTmp, "<form action='/req' method='get'>Command:<input type='text' name='code'/><input type='submit'><a href='/req?code=pwr'>Power</a> | <a href='/req?code=help'>Help</a> | <a href='/req?code=log'>Event Log</a> | <a href='/req?code=time'>Time</a><br>", sizeof(szTmp)-1);
+  strncat(szTmp, "<textarea rows='80' cols='180'>", sizeof(szTmp)-1);
+  //strncat(szTmp, "<textarea rows='45' cols='180'>", sizeof(szTmp)-1);
   strncat(szTmp, g_szRecvBuff, sizeof(szTmp)-1);
   strncat(szTmp, "</textarea></form>", sizeof(szTmp)-1);
   strncat(szTmp, "</html>", sizeof(szTmp)-1);
