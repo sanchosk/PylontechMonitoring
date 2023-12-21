@@ -5,6 +5,7 @@
 #include <circular_log.h>
 #include <ArduinoJson.h>
 #include <NTPClient.h>
+#include <ESP8266TimerInterrupt.h>
 
 //+++ START CONFIGURATION +++
 
@@ -16,12 +17,12 @@
 //Uncomment for static ip configuration
 //#define STATIC_IP
 // Set your Static IP address
-#define IP 192.168.1.1
-#define NETMASK 255.255.255.0
+#define IP "*** ip address ***"
+#define NETMASK "*** netmask ***"
 // Set your Gateway IP address
-#define GATEWAY 192.168.1.10
+#define GATEWAY "*** gateway ***"
 // Set your dns address
-#define DNS 8.8.8.8
+#define DNS "*** dns ***"
 
 
 //Uncomment for authentication page
