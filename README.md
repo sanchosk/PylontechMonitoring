@@ -15,6 +15,7 @@ It it's a great starting point to integrate battery with your home automation.
   * MQTT support:
     * device pushes basic battery data like SOC, temperature, state, etc to selected MQTT server
   * Easy to modify code using Arduino IDE and flash new firmware over WiFi (no need to disconnect from the battery).
+  * choose dhcp or static ip
 
 See the project in action on [Youtube](https://youtu.be/7VyQjKU3MsU):</br>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=7VyQjKU3MsU" target="_blank"><img src="http://img.youtube.com/vi/7VyQjKU3MsU/0.jpg" alt="See the project in action on YouTube" width="240" height="180" border="10" /></a>
