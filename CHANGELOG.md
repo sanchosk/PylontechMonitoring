@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
  
 
 ### Added
+## 2024-03-26
+- fix static ip mode
+
 ## 2023-12-23
 - Per battery MQTT reporting [@sanchosk](https://github.com/sanchosk)
 
