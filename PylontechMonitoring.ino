@@ -17,13 +17,14 @@
 //Uncomment for static ip configuration
 //#define STATIC_IP
 // Set your Static IP address
-#define IP "*** ip address ***"
-#define NETMASK "*** netmask ***"
+IPAddress ip(192, 168, 11, 10);
+IPAddress subnet(255, 255, 255, 0);
 // Set your Gateway IP address
-#define GATEWAY "*** gateway ***"
+IPAddress gateway(192, 168, 11, 1);
 // Set your dns address
-#define DNS "*** dns ***"
+IPAddress dns(192, 168, 11, 1);
 
+  
 
 //Uncomment for authentication page
 //#define AUTHENTICATION
@@ -104,9 +105,11 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false); //our credentialss are hardcoded, so we don't need ESP saving those each boot (will save on flash wear)
   WiFi.hostname(WIFI_HOSTNAME);
+  
   #ifdef STATIC_IP
-     WiFi.config(IP, GATEWAY, NETMASK, DNS);
+    WiFi.config(ip, dns, gateway, subnet);
   #endif
+
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   for(int ix=0; ix<10; ix++)
