@@ -41,6 +41,9 @@ const char* www_password = "password";
 // Frequency (in seconds) for pushing data to the MQTT broker
 #define MQTT_PUSH_FREQ_SEC 2
 
+// Max Batteries
+#define MAX_PYLON_BATTERIES 8
+
 // +++ END CONFIGURATION +++
 
 #endif // PYLONTECH_H
