@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## ToDo
+- autodiscovery
+- add power battery IN/OUT ready for home assistant energy meter 
+- temperature C or F
+
+
 
 ## 2025-01-05
 - upgraded library dependency [@hidaba](https://github.com/hidaba)
