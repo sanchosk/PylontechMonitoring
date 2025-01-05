@@ -43,9 +43,8 @@ This battery uses RJ45 cable instead of RJ10. Schematics is the same only plug d
   * Install arduino IDE and ESP8266 libraries as [described here](https://averagemaker.com/2018/03/wemos-d1-mini-setup.html)
   * Open [PylontechMonitoring.ino](PylontechMonitoring.ino) in arduino IDE
   * Make sure to copy content of [libraries subdirectory](libraries) to [libraries of your Arduino IDE](https://forum.arduino.cc/index.php?topic=88380.0).
-  * Specify your WiFi login and password at the top of the file (line 11-12)
-  * If you want MQTT support, uncomment line 15 and fill details in lines 20-24
-  * Upload project to your device
+  * Configure all parameters in file Pylontech.h for your use
+    * Upload project to your device
   * Connect Wemos D1 mini to the MAX3232 transreceiver
   * Connect transreceiver to RJ10/RJ45 as descibed in the schematics (all three lines need to be connected)
   * Connect RJ10/RJ45 to the serial port of the Pylontech US2000 battery. If you have multiple batteries - connect to the master one.
@@ -53,6 +52,36 @@ This battery uses RJ45 cable instead of RJ10. Schematics is the same only plug d
   * Find what IP address was assigned to your Wemos by your router and open it in the web-browser
   * You should be able now to connunicate with the battery via WiFi
 
+# Pylontech Battery Monitor
+
+This project uses an **ESP8266** to read data from a Pylontech battery (via Serial) and publish it to an MQTT broker.  
+It also supports an internal web interface and (optionally) OTA updates.
+
+---
+
+## Configuration Parameters
+
+All configuration values are located in [`Pylontech.h`](./Pylontech.h). Below is a description of each parameter you can customize according to your environment.
+
+| Parameter               | Description                                                                                                                                                                                                         | Example                               |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|
+| **`WIFI_SSID`**         | The Wi-Fi network name (SSID) your ESP8266 should connect to.                                                                                                                                                      | `#define WIFI_SSID "MyWiFi"`          |
+| **`WIFI_PASS`**         | The password for your Wi-Fi network.                                                                                                                                                                               | `#define WIFI_PASS "MyPassword"`      |
+| **`WIFI_HOSTNAME`**     | The hostname for your ESP8266. Useful for mDNS or other identification methods.                                                                                                                                    | `#define WIFI_HOSTNAME "MyBattery"`   |
+| **`STATIC_IP`**         | Uncomment to enable a static IP configuration (instead of DHCP).                                                                                                                                                   | `//#define STATIC_IP`                 |
+| **`ip`**                | The device’s static IP address (requires `#define STATIC_IP`).                                                                                                                                                     | `IPAddress ip(192, 168, 1, 50);`      |
+| **`subnet`**            | The subnet mask (requires `#define STATIC_IP`).                                                                                                                                                                    | `IPAddress subnet(255, 255, 255, 0);` |
+| **`gateway`**           | The default gateway for your network (requires `#define STATIC_IP`).                                                                                                                                              | `IPAddress gateway(192, 168, 1, 1);`  |
+| **`dns`**               | The DNS server (requires `#define STATIC_IP`).                                                                                                                                                                     | `IPAddress dns(192, 168, 1, 1);`      |
+| **`AUTHENTICATION`**    | Uncomment to enable HTTP Basic Authentication for the internal web interface.                                                                                                                                      | `//#define AUTHENTICATION`            |
+| **`www_username`**      | The username for HTTP Basic Authentication (only if `#define AUTHENTICATION`).                                                                                                                                     | `const char* www_username = "admin";` |
+| **`www_password`**      | The password for HTTP Basic Authentication (only if `#define AUTHENTICATION`).                                                                                                                                     | `const char* www_password = "secret";`|
+| **`ENABLE_MQTT`**       | Uncomment to enable MQTT functionality.                                                                                                                                                                            | `#define ENABLE_MQTT`                 |
+| **`GMT`**               | Set your time offset (in seconds) for NTP. Examples: **GMT+1** = 3600, **GMT+2** = 7200, **GMT-1** = -3600, etc.                                                                                                     | `#define GMT 7200`                    |
+| **`MQTT_SERVER`**       | The hostname or IP address of your MQTT broker.                                                                                                                                                                    | `#define MQTT_SERVER "192.168.1.100"` |
+| **`MQTT_PORT`**         | The port your MQTT broker listens on.                                                                                                                                                                             | `#define MQTT_PORT 1883`              |
+| **`MQTT_USER`**         | The username for MQTT authentication (if required by the broker).                                                                                                                                                 | `#define MQTT_USER "mqttUser"`        |
+| **`MQTT_PASSWORD`**     | The password for MQTT authentication (if required by the broker).                                                                                                                          
 
 
 # Example of sensors in Home Assistant:

@@ -6,54 +6,9 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <ESP8266TimerInterrupt.h>
-
-//+++ START CONFIGURATION +++
-
-//IMPORTANT: Specify your WIFI settings:
-#define WIFI_SSID "*** your ssid ***"
-#define WIFI_PASS "*** your wifi pass ***"
-#define WIFI_HOSTNAME "PylontechBattery"
-
-//Uncomment for static ip configuration
-//#define STATIC_IP
-// Set your Static IP address
-IPAddress ip(192, 168, 11, 10);
-IPAddress subnet(255, 255, 255, 0);
-// Set your Gateway IP address
-IPAddress gateway(192, 168, 11, 1);
-// Set your dns address
-IPAddress dns(192, 168, 11, 1);
-
-  
-
-//Uncomment for authentication page
-//#define AUTHENTICATION
-//set http Authentication
-const char* www_username = "admin";
-const char* www_password = "password";
+#include "PylontechMonitoring.h"  //configuration file
 
 
-//IMPORTANT: Uncomment this line if you want to enable MQTT (and fill correct MQTT_ values below):
-#define ENABLE_MQTT
-
-// Set offset time in seconds to adjust for your timezone, for example:
-// GMT +1 = 3600
-// GMT +1 = 7200
-// GMT +8 = 28800
-// GMT -1 = -3600
-// GMT 0 = 0
-#define GMT 7200
-
-//NOTE 1: if you want to change what is pushed via MQTT - edit function: pushBatteryDataToMqtt.
-//NOTE 2: MQTT_TOPIC_ROOT is where battery will push MQTT topics. For example "soc" will be pushed to: "home/grid_battery/soc"
-#define MQTT_SERVER        "*** your MQTT server ***"
-#define MQTT_PORT          1883
-#define MQTT_USER          "*** your MQTT username ***"
-#define MQTT_PASSWORD      "*** your MQTT password ***"
-#define MQTT_TOPIC_ROOT    "pylontech/sensor/grid_battery/"  //this is where mqtt data will be pushed
-#define MQTT_PUSH_FREQ_SEC 2  //maximum mqtt update frequency in seconds
-
-//+++   END CONFIGURATION +++
 
 #ifdef ENABLE_MQTT
 #include <PubSubClient.h>
