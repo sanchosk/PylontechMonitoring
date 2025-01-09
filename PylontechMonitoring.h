@@ -42,7 +42,9 @@ const char* www_password = "password";
 #define MQTT_PUSH_FREQ_SEC 2
 
 // Max Batteries
-#define MAX_PYLON_BATTERIES 8
+#define MAX_PYLON_BATTERIES 2
+
+static const char HA_DISCOVERY_SENSOR_PREFIX[] = "homeassistant/sensor/";
 
 // +++ END CONFIGURATION +++
 

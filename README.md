@@ -63,66 +63,170 @@ It also supports an internal web interface and (optionally) OTA updates.
 
 All configuration values are located in [`Pylontech.h`](./Pylontech.h). Below is a description of each parameter you can customize according to your environment.
 
-| Parameter               | Description                                                                                                                                                                                                         | Example                               |
-|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|
-| **`WIFI_SSID`**         | The Wi-Fi network name (SSID) your ESP8266 should connect to.                                                                                                                                                      | `#define WIFI_SSID "MyWiFi"`          |
-| **`WIFI_PASS`**         | The password for your Wi-Fi network.                                                                                                                                                                               | `#define WIFI_PASS "MyPassword"`      |
-| **`WIFI_HOSTNAME`**     | The hostname for your ESP8266. Useful for mDNS or other identification methods.                                                                                                                                    | `#define WIFI_HOSTNAME "MyBattery"`   |
-| **`STATIC_IP`**         | Uncomment to enable a static IP configuration (instead of DHCP).                                                                                                                                                   | `//#define STATIC_IP`                 |
-| **`ip`**                | The device’s static IP address (requires `#define STATIC_IP`).                                                                                                                                                     | `IPAddress ip(192, 168, 1, 50);`      |
-| **`subnet`**            | The subnet mask (requires `#define STATIC_IP`).                                                                                                                                                                    | `IPAddress subnet(255, 255, 255, 0);` |
-| **`gateway`**           | The default gateway for your network (requires `#define STATIC_IP`).                                                                                                                                              | `IPAddress gateway(192, 168, 1, 1);`  |
-| **`dns`**               | The DNS server (requires `#define STATIC_IP`).                                                                                                                                                                     | `IPAddress dns(192, 168, 1, 1);`      |
-| **`AUTHENTICATION`**    | Uncomment to enable HTTP Basic Authentication for the internal web interface.                                                                                                                                      | `//#define AUTHENTICATION`            |
-| **`www_username`**      | The username for HTTP Basic Authentication (only if `#define AUTHENTICATION`).                                                                                                                                     | `const char* www_username = "admin";` |
-| **`www_password`**      | The password for HTTP Basic Authentication (only if `#define AUTHENTICATION`).                                                                                                                                     | `const char* www_password = "secret";`|
-| **`ENABLE_MQTT`**       | Uncomment to enable MQTT functionality.                                                                                                                                                                            | `#define ENABLE_MQTT`                 |
-| **`GMT`**               | Set your time offset (in seconds) for NTP. Examples: **GMT+1** = 3600, **GMT+2** = 7200, **GMT-1** = -3600, etc.                                                                                                     | `#define GMT 7200`                    |
-| **`MQTT_SERVER`**       | The hostname or IP address of your MQTT broker.                                                                                                                                                                    | `#define MQTT_SERVER "192.168.1.100"` |
-| **`MQTT_PORT`**         | The port your MQTT broker listens on.                                                                                                                                                                             | `#define MQTT_PORT 1883`              |
-| **`MQTT_USER`**         | The username for MQTT authentication (if required by the broker).                                                                                                                                                 | `#define MQTT_USER "mqttUser"`        |
-| **`MQTT_PASSWORD`**     | The password for MQTT authentication (if required by the broker).                                                                                                                          
+| Parameter                        | Description                                                                                                                                                                                                         | Example                               |
+|----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|
+| **`WIFI_SSID`**                  | The Wi-Fi network name (SSID) your ESP8266 should connect to.                                                                                                                                                      | `#define WIFI_SSID "MyWiFi"`          |
+| **`WIFI_PASS`**                  | The password for your Wi-Fi network.                                                                                                                                                                               | `#define WIFI_PASS "MyPassword"`      |
+| **`WIFI_HOSTNAME`**              | The hostname for your ESP8266. Useful for mDNS or other identification methods.                                                                                                                                    | `#define WIFI_HOSTNAME "MyBattery"`   |
+| **`STATIC_IP`**                  | Uncomment to enable a static IP configuration (instead of DHCP).                                                                                                                                                   | `//#define STATIC_IP`                 |
+| **`ip`**                         | The device’s static IP address (requires `#define STATIC_IP`).                                                                                                                                                     | `IPAddress ip(192, 168, 1, 50);`      |
+| **`subnet`**                     | The subnet mask (requires `#define STATIC_IP`).                                                                                                                                                                    | `IPAddress subnet(255, 255, 255, 0);` |
+| **`gateway`**                    | The default gateway for your network (requires `#define STATIC_IP`).                                                                                                                                              | `IPAddress gateway(192, 168, 1, 1);`  |
+| **`dns`**                        | The DNS server (requires `#define STATIC_IP`).                                                                                                                                                                     | `IPAddress dns(192, 168, 1, 1);`      |
+| **`AUTHENTICATION`**             | Uncomment to enable HTTP Basic Authentication for the internal web interface.                                                                                                                                      | `//#define AUTHENTICATION`            |
+| **`www_username`**               | The username for HTTP Basic Authentication (only if `#define AUTHENTICATION`).                                                                                                                                     | `const char* www_username = "admin";` |
+| **`www_password`**               | The password for HTTP Basic Authentication (only if `#define AUTHENTICATION`).                                                                                                                                     | `const char* www_password = "secret";`|
+| **`ENABLE_MQTT`**                | Uncomment to enable MQTT functionality.                                                                                                                                                                            | `#define ENABLE_MQTT`                 |
+| **`GMT`**                        | Set your time offset (in seconds) for NTP. Examples: **GMT+1** = 3600, **GMT+2** = 7200, **GMT-1** = -3600, etc.                                                                                                     | `#define GMT 7200`                    |
+| **`MQTT_SERVER`**                | The hostname or IP address of your MQTT broker.                                                                                                                                                                    | `#define MQTT_SERVER "192.168.1.100"` |
+| **`MQTT_PORT`**                  | The port your MQTT broker listens on.                                                                                                                                                                             | `#define MQTT_PORT 1883`              |
+| **`MQTT_USER`**                  | The username for MQTT authentication (if required by the broker).                                                                                                                                                 | `#define MQTT_USER "mqttUser"`        |
+| **`MQTT_PASSWORD`**              | The password for MQTT authentication (if required by the broker).                                                                                                                          
+| **`HA_DISCOVERY_SENSOR_PREFIX`** | The Prefix for autodiscovery (homeassistant/sensor/).
+
+## Home Assistant MQTT Discovery Sensors
+
+When `ENABLE_MQTT` is defined and the firmware connects successfully to your MQTT broker, the following sensors will appear in Home Assistant via **MQTT Autodiscovery**.
 
 
-# Example of sensors in Home Assistant:
+---
 
+### Global Sensors
+
+These sensors describe the overall battery stack:
+
+1. **SoC**  
+   - **HA Name**: `Pylontech Battery SoC`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT>soc`  
+   - **Unit**: `%`  
+   - **device_class**: `battery`  
+   - **Description**: Total State of Charge (%) for the battery stack.
+
+2. **temp**  
+   - **HA Name**: `Pylontech Temperature`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT>temp`  
+   - **Unit**: `°C`  
+   - **device_class**: `temperature`  
+   - **Description**: Overall battery temperature (converted internally from millidegrees).
+
+3. **currentDC**  
+   - **HA Name**: `Pylontech Battery Current`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT>currentDC`  
+   - **Unit**: `mA`  
+   - **device_class**: `current`  
+   - **Description**: Summed DC current in milliamps (positive = charging, negative = discharging).
+
+4. **powerDC**  
+   - **HA Name**: `Pylontech DC Power`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT>getPowerDC`  
+   - **Unit**: `W`  
+   - **device_class**: `power`  
+   - **Description**: Approximate DC power in watts (calculated from voltage and current).
+
+5. **powerIN**  
+   - **HA Name**: `Pylontech Power IN`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT>powerIN`  
+   - **Unit**: `W`  
+   - **device_class**: `power`  
+   - **Description**: Instantaneous power (W) flowing into the battery (charging).
+
+6. **powerOUT**  
+   - **HA Name**: `Pylontech Power OUT`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT>powerOUT`  
+   - **Unit**: `W`  
+   - **device_class**: `power`  
+   - **Description**: Instantaneous power (W) flowing out of the battery (discharging).
+
+---
+
+### Per-Battery Sensors
+
+Each physical battery is indexed by `ix` (0 to `MAX_PYLON_BATTERIES-1`). For each one, the firmware creates four additional sensors:
+
+1. **Charging**  
+   - **HA Name**: `Battery ix Charging`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT><ix>/charging`  
+   - **Unit**: *(none)* — returns `0` or `1`  
+   - **Description**: Indicates whether this battery is charging (`1`) or not (`0`).
+
+2. **Discharging**  
+   - **HA Name**: `Battery ix Discharging`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT><ix>/discharging`  
+   - **Unit**: *(none)* — returns `0` or `1`  
+   - **Description**: Indicates if the battery is discharging (`1`) or not (`0`).
+
+3. **Idle**  
+   - **HA Name**: `Battery ix Idle`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT><ix>/idle`  
+   - **Unit**: *(none)* — returns `0` or `1`  
+   - **Description**: Indicates if this battery is in “Idle” state (`1`) or not (`0`).
+
+4. **State**  
+   - **HA Name**: `Battery ix State`  
+   - **MQTT Topic**: `<MQTT_TOPIC_ROOT><ix>/state`  
+   - **Unit**: *(none)*  
+   - **Values**: `Idle`, `Charging`, `Discharging`, or `Unknown`  
+   - **Description**: A textual status for the single battery.
+
+Additionally, the firmware publishes these numeric values for each battery (not auto-discovered):
+
+- `<MQTT_TOPIC_ROOT><ix>/voltage` (voltage in V)  
+- `<MQTT_TOPIC_ROOT><ix>/current` (current in A)  
+- `<MQTT_TOPIC_ROOT><ix>/soc` (SoC %)
+
+---
+
+### Other Published Data
+
+A few more values are published but not automatically discovered:
+
+- **`battery_count`** — number of detected batteries  
+- **`base_state`** — overall stack state (`"Charge"`, `"Dischg"`, `"Idle"`, etc.)  
+- **`is_normal`** — `1` if all batteries are normal, otherwise `0`  
+- **`estPowerAC`** — approximate AC-side power in W (inverter losses considered)
+
+You can manually create MQTT sensors in Home Assistant to track these additional topics.
+
+---
+
+## Home Assistant Energy Integration
+
+If you want to display **kWh** (cumulative energy) in Home Assistant’s Energy dashboard, you need sensors of type “energy” instead of “power.” By default, this firmware publishes instantaneous power in watts (`W`), which Home Assistant does not directly include in the Energy panel. To solve this, you can use Home Assistant’s **integration** platform to convert power (W) into energy (kWh).
+
+Below is an example of how to create two custom sensors—one for battery **in** energy (charging) and one for battery **out** energy (discharging)—which you can then select in Home Assistant’s Energy configuration.
+
+### Example YAML Configuration
+
+```yaml
+sensor:
+  - platform: integration
+    source: sensor.pylontechbattery_pylontech_power_in
+    name: "Pylontech Battery Energy In"
+    unit_prefix: k
+    round: 2
+    method: left
+
+  - platform: integration
+    source: sensor.pylontechbattery_pylontech_power_out
+    name: "Pylontech Battery Energy Out"
+    unit_prefix: k
+    round: 2
+    method: left
 ```
-mqtt:
 
-  sensor:
-    - name: "Livello Carica Batteria"
-      state_topic: "homeassistant/sensor/grid_battery/soc"
-      unit_of_measurement: "%"
-      device_class: battery
-      
-    - name: "Stato Batteria"
-      state_topic: "homeassistant/sensor/grid_battery/base_state"
-      
-    - name: "Temperatura Batteria"
-      state_topic: "homeassistant/sensor/grid_battery/temp"
-      unit_of_measurement: "°C"
-      device_class: temperature
-      
-    - name: "Num Batterie"
-      state_topic: "homeassistant/sensor/grid_battery/battery_count"
-      
-    - name: "Potenza impegnata Batterie"
-      state_topic: "homeassistant/sensor/grid_battery/getPowerDC"
-      unit_of_measurement: "Wh"
-      device_class: energy
-      
-    - name: "Potenza carica Batterie"
-      state_topic: "homeassistant/sensor/grid_battery/powerIN"
-      unit_of_measurement: "Wh"
-      state_class: "total_increasing"
-      device_class: "energy"
-      icon: mdi:flash
+> **Notes**:
+> - **`source`** must match the *power sensor* name in watts that the firmware publishes, as seen in Home Assistant’s Developer Tools → States (e.g., `sensor.pylontechbattery_pylontech_power_in`).
+> - **`unit_prefix: k`** converts watt-hours (Wh) to kilowatt-hours (kWh).
+> - **`round: 2`** sets the number of decimal places.
+> - **`method: left`** is one of the integration methods (other options: `trapezoidal`, etc.).
 
-      
-    - name: "Potenza scarica Batterie"
-      state_topic: "homeassistant/sensor/grid_battery/powerOUT"
-      unit_of_measurement: "Wh"
-      state_class: "total_increasing"
-      device_class: "energy"
-      icon: mdi:flash
-```
+### Using in the Energy Dashboard
+
+1. **Restart** Home Assistant after adding the above configuration.  
+2. Go to **Settings → Devices & Services** or directly **Settings → Energy** (depending on your HA version).  
+3. In **Settings → Energy**, add a new energy source or battery entry:
+   - Select the newly created sensor, e.g., `sensor.pylontech_battery_energy_in` or `sensor.pylontech_battery_energy_out`.
+4. Home Assistant will begin accumulating data for these sensors in kilowatt-hours over time. It may take some minutes or hours to populate graphs and statistics in the Energy dashboard.
+
+With this approach, you keep your firmware simple (publishing power in watts) and let Home Assistant handle the accumulation into kWh. Once you have these “Energy” sensors, you can fully utilize Home Assistant’s Energy dashboard to monitor charging and discharging over time.
+
