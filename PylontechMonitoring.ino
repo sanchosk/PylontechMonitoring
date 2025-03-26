@@ -578,21 +578,24 @@ bool parsePwrResponse(const char* pStr)
     }
     else
     {
+      // we need to re-read state as for present batteries the position is shifted!
+      extractStr(pLineStart, 91, g_stack.batts[ix].baseState, sizeof(g_stack.batts[ix].baseState));
+      
       g_stack.batts[ix].isPresent = true;
-      extractStr(pLineStart, 64, g_stack.batts[ix].voltageState, sizeof(g_stack.batts[ix].voltageState));
-      extractStr(pLineStart, 73, g_stack.batts[ix].currentState, sizeof(g_stack.batts[ix].currentState));
-      extractStr(pLineStart, 82, g_stack.batts[ix].tempState, sizeof(g_stack.batts[ix].tempState));
-      extractStr(pLineStart, 100, g_stack.batts[ix].time, sizeof(g_stack.batts[ix].time));
-      extractStr(pLineStart, 121, g_stack.batts[ix].b_v_st, sizeof(g_stack.batts[ix].b_v_st));
-      extractStr(pLineStart, 130, g_stack.batts[ix].b_t_st, sizeof(g_stack.batts[ix].b_t_st));
+      extractStr(pLineStart, 100, g_stack.batts[ix].voltageState, sizeof(g_stack.batts[ix].voltageState));
+      extractStr(pLineStart, 109, g_stack.batts[ix].currentState, sizeof(g_stack.batts[ix].currentState));
+      extractStr(pLineStart, 118, g_stack.batts[ix].tempState, sizeof(g_stack.batts[ix].tempState));
+      extractStr(pLineStart, 136, g_stack.batts[ix].time, sizeof(g_stack.batts[ix].time));
+      extractStr(pLineStart, 157, g_stack.batts[ix].b_v_st, sizeof(g_stack.batts[ix].b_v_st));
+      extractStr(pLineStart, 166, g_stack.batts[ix].b_t_st, sizeof(g_stack.batts[ix].b_t_st));
       g_stack.batts[ix].voltage = extractInt(pLineStart, 6);
       g_stack.batts[ix].current = extractInt(pLineStart, 13);
       g_stack.batts[ix].tempr   = extractInt(pLineStart, 20);
       g_stack.batts[ix].cellTempLow    = extractInt(pLineStart, 27);
-      g_stack.batts[ix].cellTempHigh   = extractInt(pLineStart, 34);
-      g_stack.batts[ix].cellVoltLow    = extractInt(pLineStart, 41);
-      g_stack.batts[ix].cellVoltHigh   = extractInt(pLineStart, 48);
-      g_stack.batts[ix].soc            = extractInt(pLineStart, 91);
+      g_stack.batts[ix].cellTempHigh   = extractInt(pLineStart, 43);
+      g_stack.batts[ix].cellVoltLow    = extractInt(pLineStart, 59);
+      g_stack.batts[ix].cellVoltHigh   = extractInt(pLineStart, 75);
+      g_stack.batts[ix].soc            = extractInt(pLineStart, 127);
 
       //////////////////////////////// Post-process ////////////////////////
       g_stack.batteryCount++;
